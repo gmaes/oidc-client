@@ -172,7 +172,7 @@ const openIdConnectStrategy = async (app: Express) => {
     app.get(fullPath(AuthRoute.AuthenticationStart), (req, res, next) => {
       // const scope = (issuer.metadata?.scopes_supported as string[]).join(' ') ?? 'openid email';
       console.log("START");
-      const scope = "openid email";
+      const scope = "openid user-id user-ca";
       // const scope = "openid";
       console.log({ scope });
       passport.authenticate("oidc", { scope })(req, res, next);
