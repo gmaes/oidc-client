@@ -12,6 +12,7 @@ import expressSession from "express-session";
 import { Issuer, Strategy, TokenSet } from "openid-client";
 import passport from "passport";
 import { create as createRootCas } from "ssl-root-cas";
+import OpenIDConnectStrategy from "passport-openidconnect";
 
 const local = true;
 let autoIssuerUrl;
@@ -44,8 +45,16 @@ export enum AuthRoute {
   LogOutCallback = "/logout/callback",
   SignIn = "/signin",
 }
+export enum AuthRoute2 {
+  AuthenticationStart = "/authentication2",
+  AuthenticationCallback = "/authentication2/callback",
+  LogOutStart = "/logout",
+  LogOutCallback = "/logout/callback",
+  SignIn = "/signin",
+}
 
 const redirectURI = `http://localhost:3001${AuthRoute.AuthenticationCallback}`;
+const redirectURI2 = `http://localhost:3001${AuthRoute2.AuthenticationCallback}`;
 
 const getFrontendEndpoint = () => "http://localhost:3000";
 
@@ -84,7 +93,7 @@ const openIdConnectStrategy = async (app: Express) => {
       client_secret: clientSecret,
       redirect_uris: [redirectURI],
       // response_types: ['code'],
-      token_endpoint_auth_method: "tls_client_auth",
+      token_endpoint_auth_method: clientSecret ? "client_secret_post" : "none",
     });
 
     app.use(passport.initialize());
@@ -162,7 +171,7 @@ const openIdConnectStrategy = async (app: Express) => {
     app.get(fullPath(AuthRoute.AuthenticationStart), (req, res, next) => {
       // const scope = (issuer.metadata?.scopes_supported as string[]).join(' ') ?? 'openid email';
       console.log("START");
-      const scope = "openid user-id user-ca";
+      const scope = "openid";
       // const scope = "openid";
       console.log({ scope });
       passport.authenticate("oidc", { scope })(req, res, next);
@@ -172,7 +181,7 @@ const openIdConnectStrategy = async (app: Express) => {
       console.log("CALLBACK");
       passport.authenticate("oidc", {
         failureRedirect: getFrontendEndpoint(),
-        // scope: 'oidc id_token',
+        scope: "openid",
         successRedirect: `${getFrontendEndpoint()}/label/login/success`,
       })(req, res, next);
     });
@@ -212,6 +221,42 @@ const openIdConnectStrategy = async (app: Express) => {
       req.logout();
       res.redirect(getFrontendEndpoint());
     });
+
+    passport.use(
+      new OpenIDConnectStrategy(
+        {
+          issuer: "https://identityrec.devinfo.fr.cly/outil/SOID/",
+          authorizationURL:
+            "https://identityrec.devinfo.fr.cly/outil/SOID/openid/authorize",
+          tokenURL:
+            "https://identityrec.devinfo.fr.cly/outil/SOID/openid/token",
+          userInfoURL:
+            "https://identityrec.devinfo.fr.cly/outil/SOID/openid/userinfo",
+          clientID: clientId,
+          clientSecret: clientSecret,
+          callbackURL: redirectURI2,
+        },
+        function verify(issuer, profile, cb) {
+          const user = { email: "test+admin@kili-technology.com" };
+          return cb(null, user);
+        }
+      )
+    );
+
+    app.get(
+      fullPath(AuthRoute2.AuthenticationStart),
+      passport.authenticate("openidconnect")
+    );
+    app.get(
+      fullPath(AuthRoute2.AuthenticationCallback),
+      passport.authenticate("openidconnect", {
+        failureRedirect: "/login",
+        failureMessage: true,
+      }),
+      function (req, res) {
+        res.redirect("/");
+      }
+    );
   } catch (error) {
     console.error("OpenId - failed to initialize connection with IDP");
     console.error(error);
