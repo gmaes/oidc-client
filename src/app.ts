@@ -8,8 +8,9 @@ Go to http://localhost:3001/authentication -> redirect to sign page from server 
 
 import express, { Express } from "express";
 import cors from "cors";
+import fs from "fs";
 import expressSession from "express-session";
-import { Issuer, Strategy, TokenSet } from "openid-client";
+import { Issuer, Strategy, TokenSet, custom } from "openid-client";
 import passport from "passport";
 
 const local = true;
@@ -44,6 +45,11 @@ export enum AuthRoute {
 const redirectURI = `http://localhost:3001${AuthRoute.AuthenticationCallback}`;
 
 const getFrontendEndpoint = () => "http://localhost:3000";
+
+custom.setHttpOptionsDefaults({
+  cert: fs.readFileSync("./ssl/my_key.pem"),
+  key: fs.readFileSync("./ssl/my_key.pem"),
+});
 
 async function init() {
   const app = express();
@@ -80,8 +86,16 @@ const openIdConnectStrategy = async (app: Express) => {
       client_secret: clientSecret,
       redirect_uris: [redirectURI],
       // response_types: ['code'],
-      token_endpoint_auth_method: clientSecret ? "client_secret_post" : "none",
+      token_endpoint_auth_method: "tls_client_auth",
     });
+    client[custom.http_options] = function (url, options) {
+      const result = {};
+      // @ts-ignore
+      result.cert = fs.readFileSync("./ssl/my_key.pem"); // <string> | <string[]> | <Buffer> | <Buffer[]>
+      // @ts-ignore
+      result.key = fs.readFileSync("./ssl/my_key.pem"); // <string> | <string[]> | <Buffer> | <Buffer[]> | <Object[]>
+      return result;
+    };
 
     app.use(passport.initialize());
     app.use(passport.session());
