@@ -2,7 +2,7 @@ import OpenIDConnectStrategy from "passport-openidconnect";
 import passport from "passport-strategy";
 import { OAuth2 } from "oauth";
 import util from "util";
-import url from "url";
+import URL from "url";
 import SessionStore from "./store";
 import * as utils from "./utils";
 import parse from "./profile";
@@ -34,6 +34,51 @@ function KiliOAuth2(
 
 util.inherits(KiliOAuth2, OAuth2);
 
+KiliOAuth2.prototype.getOAuthAccessToken = function (code, params, callback) {
+  var params = params || {};
+  var codeParam =
+    params.grant_type === "refresh_token" ? "refresh_token" : "code";
+  params[codeParam] = code;
+
+  var post_data = querystring.stringify(params);
+  var auth =
+    "Basic " +
+    Buffer.from(this._clientId + ":" + this._clientSecret).toString("base64");
+  var post_headers = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    Authorization: auth,
+  };
+
+  this._request(
+    "POST",
+    this._getAccessTokenUrl(),
+    post_headers,
+    post_data,
+    null,
+    function (error, data, response) {
+      if (error) callback(error);
+      else {
+        var results;
+        try {
+          // As of http://tools.ietf.org/html/draft-ietf-oauth-v2-07
+          // responses should be in JSON
+          results = JSON.parse(data);
+        } catch (e) {
+          // .... However both Facebook + Github currently use rev05 of the spec
+          // and neither seem to specify a content-type correctly in their response headers :(
+          // clients of these services will suffer a *minor* performance cost of the exception
+          // being thrown
+          results = querystring.parse(data);
+        }
+        var access_token = results["access_token"];
+        var refresh_token = results["refresh_token"];
+        delete results["refresh_token"];
+        callback(null, access_token, refresh_token, results); // callback results =-=
+      }
+    }
+  );
+};
+
 KiliOAuth2.prototype._request = function (
   method,
   url,
@@ -49,8 +94,9 @@ KiliOAuth2.prototype._request = function (
     post_body,
     access_token,
   });
-  var parsedUrl = url.parse(url, true);
+  var parsedUrl = URL.parse(url, true);
   if (parsedUrl.protocol == "https:" && !parsedUrl.port) {
+    // @ts-ignore
     parsedUrl.port = 443;
   }
 
@@ -194,7 +240,7 @@ function KiliStrategy(options, verify) {
 
   var key =
     options.sessionKey ||
-    this.name + ":" + url.parse(options.authorizationURL).hostname;
+    this.name + ":" + URL.parse(options.authorizationURL).hostname;
   this._stateStore = options.store || new SessionStore({ key: key });
 
   this._userInfoURL = options.userInfoURL;
@@ -236,11 +282,11 @@ KiliStrategy.prototype.authenticate = function (req, options) {
 
   var callbackURL = options.callbackURL || self._callbackURL;
   if (callbackURL) {
-    var parsed = url.parse(callbackURL);
+    var parsed = URL.parse(callbackURL);
     if (!parsed.protocol) {
       // The callback URL is relative, resolve a fully qualified URL from the
       // URL of the originating request.
-      callbackURL = url.resolve(
+      callbackURL = URL.resolve(
         // @ts-ignore
         utils.originalURL(req, { proxy: self._trustProxy }),
         callbackURL
@@ -681,11 +727,11 @@ KiliStrategy.prototype.authenticate = function (req, options) {
       }
 
       params.state = state;
-      var parsed = url.parse(self._oauth2._authorizeUrl, true);
+      var parsed = URL.parse(self._oauth2._authorizeUrl, true);
       // @ts-ignore
       utils.merge(parsed.query, params);
       delete parsed.search;
-      var location = url.format(parsed);
+      var location = URL.format(parsed);
       self.redirect(location);
     }
 
