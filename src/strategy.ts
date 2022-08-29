@@ -163,7 +163,7 @@ function KiliStrategy(options, verify) {
   // NOTE: The _oauth2 property is considered "protected".  Subclasses are
   //       allowed to use it when making protected resource requests to retrieve
   //       the user profile.
-  this._oauth2 = new OAuth2(
+  this._oauth2 = new KiliOAuth2(
     options.clientID,
     options.clientSecret,
     "",
