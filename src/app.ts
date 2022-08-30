@@ -125,7 +125,7 @@ const openIdConnectStrategy = async (app: Express) => {
       //   callbackURL: redirectURI2,
       // },
       function verify(issuer, profile, cb) {
-        console.log("VERIFY", { profile });
+        console.log("VERIFY", JSON.stringify(profile));
         const user = { email: "test+admin@kili-technology.com" };
         return cb(null, user);
       }
