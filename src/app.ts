@@ -10,7 +10,7 @@ Go to http://localhost:3001/authentication -> redirect to sign page from server 
 import express, { Express } from "express";
 import cors from "cors";
 import expressSession from "express-session";
-import { Issuer, Strategy, TokenSet } from "openid-client";
+import { Issuer, Strategy, TokenSet } from "./lib/index.js";
 import passport from "passport";
 import { create as createRootCas } from "ssl-root-cas";
 import OpenIDConnectStrategy from "./strategy";
@@ -89,6 +89,7 @@ const openIdConnectStrategy = async (app: Express) => {
   try {
     const issuer = await Issuer.discover(autoIssuerUrl);
     console.log(`To authenticate, go to http://localhost:3001/authentication`);
+    // @ts-ignore
     const client = new issuer.Client({
       client_id: clientId,
       client_secret: clientSecret,
@@ -103,7 +104,9 @@ const openIdConnectStrategy = async (app: Express) => {
     passport.use(
       "oidc",
       new Strategy(
+        // @ts-ignore
         { client },
+        // @ts-ignore
         async (tokenSet: TokenSet, userInfo: any, done: any) => {
           console.log("VERIFY", JSON.stringify({ tokenSet, userInfo }));
           if (!rejectNewUsers) {
