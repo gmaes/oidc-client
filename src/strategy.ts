@@ -44,6 +44,7 @@ KiliOAuth2.prototype.getOAuthAccessToken = function (code, params, callback) {
   var auth =
     "Basic " +
     Buffer.from(this._clientId + ":" + this._clientSecret).toString("base64");
+  // BY DEFAULT THE AUTHENT IS DONE VIA BASIC WITH CLIENT IN THE AUTHORIZATION
   var post_headers = {
     "Content-Type": "application/x-www-form-urlencoded",
     Authorization: auth,
