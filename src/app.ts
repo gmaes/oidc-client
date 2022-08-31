@@ -13,7 +13,6 @@ import expressSession from "express-session";
 import { Issuer, Strategy, TokenSet } from "./lib/index.js";
 import passport from "passport";
 import { create as createRootCas } from "ssl-root-cas";
-import OpenIDConnectStrategy from "./strategy";
 
 const local = true;
 let autoIssuerUrl;
@@ -46,16 +45,8 @@ export enum AuthRoute {
   LogOutCallback = "/logout/callback",
   SignIn = "/signin",
 }
-export enum AuthRoute2 {
-  AuthenticationStart = "/authentication2",
-  AuthenticationCallback = "/authentication2/callback",
-  LogOutStart = "/logout",
-  LogOutCallback = "/logout/callback",
-  SignIn = "/signin",
-}
 
 const redirectURI = `http://localhost:3001${AuthRoute.AuthenticationCallback}`;
-const redirectURI2 = `http://localhost:3001${AuthRoute2.AuthenticationCallback}`;
 
 const getFrontendEndpoint = () => "http://localhost:3000";
 
@@ -111,68 +102,10 @@ const openIdConnectStrategy = async (app: Express) => {
           console.log("VERIFY", JSON.stringify({ tokenSet, userInfo }));
           if (!rejectNewUsers) {
             const email = userInfo.email;
-            // signUpUserIfNotExists(models, email).then((_) => {
-            //   const claims = tokenSet.claims();
-            //   const fullObject = {
-            //     ...userInfo,
-            //     ...claims,
-            //   };
-            //   return done(null, fullObject);
-            // });
             return done(null, userInfo);
           } else {
             return done(null, tokenSet.claims());
           }
-          // console.log("USE STRAT");
-          // const claims = tokenSet.claims();
-          // console.log("use strategry oidc", {
-          //   claims,
-          //   rejectNewUsers,
-          //   tokenSet,
-          //   userInfo,
-          // });
-          // if (!rejectNewUsers) {
-          //   const scopes = (tokenSet.scope ?? "").split(" ");
-          //   const isEmailInScope = scopes.includes("email");
-          //   if (isEmailInScope) {
-          //     const email = userInfo.email;
-          //     console.log("Email in scope and got email", { email });
-          //     // signUpUserIfNotExists(models, email).then((_) => {
-          //     const claims = tokenSet.claims();
-          //     const fullObject = {
-          //       ...userInfo,
-          //       ...claims,
-          //     };
-          //     return done(null, fullObject);
-          //     // });
-          //   }
-          //   const { access_token, token_type } = tokenSet;
-          //   console.log({ access_token, token_type });
-          //   if (access_token) {
-          //     client
-          //       .userinfo(access_token, {
-          //         method: "POST",
-          //         params: { email: null },
-          //         tokenType: token_type,
-          //         via: "header",
-          //       })
-          //       .then((userInfoResponse) => {
-          //         const email = userInfoResponse.email;
-          //         console.log({ email, userInfoResponse });
-          //         if (email) {
-          //           const fullObject = {
-          //             ...userInfoResponse,
-          //           };
-          //           return done(null, fullObject);
-          //         }
-          //         return done(null, tokenSet.claims());
-          //       })
-          //       .catch((error) => console.error(error));
-          //   }
-          // } else {
-          //   console.log("reject new users");
-          //   return done(null, tokenSet.claims());
-          // }
         }
       )
     );
@@ -240,51 +173,6 @@ const openIdConnectStrategy = async (app: Express) => {
       console.log("desearialize", { user });
       done(null, user);
     });
-
-    const strategy = new OpenIDConnectStrategy(
-      {
-        issuer: "http://localhost:5770/",
-        authorizationURL: "http://localhost:5770/auth",
-        tokenURL: "http://localhost:5770/token",
-        userInfoURL: "http://localhost:5770/me",
-        clientID: clientId,
-        clientSecret: clientSecret,
-        callbackURL: redirectURI2,
-      },
-      // {
-      //   issuer: "https://identityrec.devinfo.fr.cly/outil/SOID/",
-      //   authorizationURL:
-      //     "https://identityrec.devinfo.fr.cly/outil/SOID/openid/authorize",
-      //   tokenURL: "https://identityrec.devinfo.fr.cly/outil/SOID/openid/token",
-      //   userInfoURL:
-      //     "https://identityrec.devinfo.fr.cly/outil/SOID/openid/userinfo",
-      //   clientID: clientId,
-      //   clientSecret: clientSecret,
-      //   callbackURL: redirectURI2,
-      // },
-      function verify(issuer, profile, cb) {
-        console.log("VERIFY", JSON.stringify(profile));
-        const user = { email: "test+admin@kili-technology.com" };
-        return cb(null, user);
-      }
-    );
-
-    passport.use(strategy);
-
-    app.get(
-      fullPath(AuthRoute2.AuthenticationStart),
-      passport.authenticate("openidconnect")
-    );
-    app.get(
-      fullPath(AuthRoute2.AuthenticationCallback),
-      passport.authenticate("openidconnect", {
-        failureRedirect: "/login",
-        failureMessage: true,
-      }),
-      function (req, res) {
-        res.redirect("/");
-      }
-    );
   } catch (error) {
     console.error("OpenId - failed to initialize connection with IDP");
     console.error(error);
