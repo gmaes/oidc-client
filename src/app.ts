@@ -14,22 +14,16 @@ import { Issuer, Strategy, TokenSet } from "./lib/index.js";
 import passport from "passport";
 // import { create as createRootCas } from "ssl-root-cas";
 
-const local = true;
-let autoIssuerUrl;
-let clientId;
-let clientSecret;
-let rejectNewUsers;
-if (local) {
-  autoIssuerUrl = "http://localhost:5770/.well-known/openid-configuration";
-  clientId = "oidcCLIENT";
-  clientSecret = "verysecret";
-  rejectNewUsers = false;
-} else {
-  autoIssuerUrl = "";
-  clientId = "KILI";
-  clientSecret = "";
-  rejectNewUsers = false;
-}
+
+const autoIssuerUrl = process.env.AUTHENTICATION__OPENID_CONNECT_AUTO_ISSUER ?? ''; // url of identity provider 
+const clientId = process.env.AUTHENTICATION__OPENID_CONNECT_CLIENT_ID ?? '';
+const clientSecret = process.env.AUTHENTICATION__OPENID_CONNECT_CLIENT_SECRET;
+const rejectNewUsers = process.env.AUTHENTICATION__OPENID_CONNECT_REJECT_NEW_USERS === 'False';
+// const tokenEndpointAuthMethod =
+//   (process.env.AUTHENTICATION__OPENID_CONNECT_TOKEN_AUTH_METHOD as ClientAuthMethod) ??
+//   'client_secret_post';
+const openIdScope = process.env.AUTHENTICATION__OPENID_CONNECT_SCOPE ?? 'openid email';
+const responseTypes = process.env.AUTHENTICATION__OPENID_CONNECT_RESPONSE_TYPES ?? 'code';
 
 // const rootCas = createRootCas();
 // rootCas.addFile("./ssl/rca.pem");
@@ -85,7 +79,7 @@ const openIdConnectStrategy = async (app: Express) => {
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uris: [redirectURI],
-      response_types: ["code"],
+      response_types: [responseTypes],
       token_endpoint_auth_method: clientSecret ? "client_secret_basic" : "none",
     });
 
@@ -113,17 +107,15 @@ const openIdConnectStrategy = async (app: Express) => {
     app.get(fullPath(AuthRoute.AuthenticationStart), (req, res, next) => {
       // const scope = (issuer.metadata?.scopes_supported as string[]).join(' ') ?? 'openid email';
       console.log("START");
-      const scope = "openid";
-      // const scope = "openid";
-      console.log({ scope });
-      passport.authenticate("oidc", { scope })(req, res, next);
+      console.log({ openIdScope });
+      passport.authenticate("oidc", { openIdScope })(req, res, next);
     });
 
     app.get(fullPath(AuthRoute.AuthenticationCallback), (req, res, next) => {
       console.log("CALLBACK");
       passport.authenticate("oidc", {
         failureRedirect: getFrontendEndpoint(),
-        scope: "openid",
+        scope: openIdScope,
         successRedirect: `${getFrontendEndpoint()}/label/login/success`,
       })(req, res, next);
     });
