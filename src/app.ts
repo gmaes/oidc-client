@@ -12,7 +12,7 @@ import cors from "cors";
 import expressSession from "express-session";
 import { Issuer, Strategy, TokenSet } from "./lib/index.js";
 import passport from "passport";
-import { create as createRootCas } from "ssl-root-cas";
+// import { create as createRootCas } from "ssl-root-cas";
 
 const local = true;
 let autoIssuerUrl;
@@ -31,8 +31,8 @@ if (local) {
   rejectNewUsers = false;
 }
 
-const rootCas = createRootCas();
-rootCas.addFile("./ssl/rca.pem");
+// const rootCas = createRootCas();
+// rootCas.addFile("./ssl/rca.pem");
 
 export const IS_USING_OPENID_CONNECT = !!autoIssuerUrl;
 
