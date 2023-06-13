@@ -194,11 +194,13 @@ const getUserEmailFromOpenIdRequest = (user: any): string => {
   if (!openIdScope.includes('email') && user?.sub) {
     return `${user.sub}@kili.com`;
   }
-  throw new KiliError('unexpectedOpenIdPayload', undefined, {
-    other: `${user}`,
-    userEmail: user?.email,
-    userID: user?.sub,
-  });
+  console.log("Issue with openId payload");
+  return "xxx"
+//   throw new KiliError('unexpectedOpenIdPayload', undefined, {
+//     other: `${user}`,
+//     userEmail: user?.email,
+//     userID: user?.sub,
+//   });
 };
 
 init();
