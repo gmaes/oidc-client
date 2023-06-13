@@ -95,7 +95,8 @@ const openIdConnectStrategy = async (app: Express) => {
         async (tokenSet: TokenSet, userInfo: any, done: any) => {
           console.log("VERIFY", JSON.stringify({ tokenSet, userInfo }));
           if (!rejectNewUsers) {
-            const email = userInfo.email;
+            console.log(userInfo);
+            const email = getUserEmailFromOpenIdRequest(userInfo);
             return done(null, userInfo);
           } else {
             return done(null, tokenSet.claims());
@@ -185,5 +186,18 @@ const findByEmail = async (email) => {
     id: "xxx",
   };
 };
+
+const getUserEmailFromOpenIdRequest = (user: any): string => {
+  if (openIdScope.includes('email') && user?.email) {
+    return user.email; 
+  }
+  if (!openIdScope.includes('email') && user?.sub) {
+    return `${user.sub}@kili.com`;
+  }
+  throw new KiliError('unexpectedOpenIdPayload', undefined, {
+    other: `${user}`,
+    userEmail: user?.email,
+    userID: user?.sub,
+ });
 
 init();
