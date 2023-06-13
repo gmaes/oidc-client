@@ -198,6 +198,7 @@ const getUserEmailFromOpenIdRequest = (user: any): string => {
     other: `${user}`,
     userEmail: user?.email,
     userID: user?.sub,
- });
+  });
+};
 
 init();
