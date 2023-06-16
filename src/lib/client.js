@@ -1450,7 +1450,7 @@ class BaseClient {
       { clientAssertionPayload, DPoP }
     );
     let responseBody;
-    console.log("GRANT RESPONSE", JSON.stringify(responseBody));
+    console.log("GRANT RESPONSE", JSON.stringify(response));
     try {
       responseBody = processResponse(response);
     } catch (err) {
