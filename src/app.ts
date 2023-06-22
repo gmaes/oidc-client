@@ -109,7 +109,7 @@ const openIdConnectStrategy = async (app: Express) => {
       // const scope = (issuer.metadata?.scopes_supported as string[]).join(' ') ?? 'openid email';
       console.log("START");
       console.log({ openIdScope });
-      passport.authenticate("oidc", { openIdScope })(req, res, next);
+      passport.authenticate("oidc", { scope: openIdScope })(req, res, next);
     });
 
     app.get(fullPath(AuthRoute.AuthenticationCallback), (req, res, next) => {
@@ -189,9 +189,11 @@ const findByEmail = async (email) => {
 
 const getUserEmailFromOpenIdRequest = (user: any): string => {
   if (openIdScope.includes('email') && user?.email) {
+    console.log('Email retrieved from userinfo: ', user.email)
     return user.email; 
   }
   if (!openIdScope.includes('email') && user?.sub) {
+    console.log('No email in userinfo, used sub: ', user.sub)
     return `${user.sub}@kili.com`;
   }
   console.log("Issue with openId payload");
