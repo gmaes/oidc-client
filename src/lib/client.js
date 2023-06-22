@@ -1361,6 +1361,7 @@ class BaseClient {
 
       const body = response.body.toString();
       const userinfo = await this.decryptJWTUserinfo(body);
+      console.log('PRINT userinfo OBJECT: ', userinfo)
       if (!this.userinfo_signed_response_alg) {
         try {
           parsed = JSON.parse(userinfo);
