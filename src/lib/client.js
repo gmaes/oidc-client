@@ -947,6 +947,7 @@ class BaseClient {
     expectedAlg,
     required = ["iss", "sub", "aud", "exp", "iat"]
   ) {
+    console.log('Entering valiadateJWT')
     const isSelfIssued = this.issuer.issuer === "https://self-issued.me";
     const timestamp = now();
     let header;
@@ -959,6 +960,7 @@ class BaseClient {
         jwt,
       });
     }
+    console.log('In valiadateJWT, decoded tokent: ', payload)
 
     if (header.alg !== expectedAlg) {
       throw new RPError({
@@ -1136,11 +1138,12 @@ class BaseClient {
     if (!keys && header.alg === "none") {
       return { protected: header, payload };
     }
-
+    console.log('Start valiadateJWT, loop on keys: ', keys)
     for (const key of keys) {
       const verified = await jose
         .compactVerify(jwt, key instanceof Uint8Array ? key : key.keyObject)
         .catch(() => {});
+      console.log('In valiadateJWT, loop on keys: ', verified)
       if (verified) {
         return {
           payload,
@@ -1148,6 +1151,7 @@ class BaseClient {
           key,
         };
       }
+      console.log('valiadateJWT - No return')
     }
 
     throw new RPError({
