@@ -73,6 +73,7 @@ function OpenIDConnectStrategy(
 OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, options) {
   (async () => {
     const client = this._client;
+    console.log("--- START STRATEGY ---")
     if (!req.session) {
       throw new TypeError('authentication requires session support');
     }
@@ -115,7 +116,7 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
     /* end authentication request */
 
     /* start authentication response */
-
+    console.log("--- STRATEGY AUTHENTICATION RESPONSE ---")
     const session = req.session[sessionKey];
     if (Object.keys(session || {}).length === 0) {
       throw new Error(
@@ -151,11 +152,12 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
       code_verifier: codeVerifier,
       response_type: responseType,
     };
-
+    console.log("--- STRATEGY START CALLBACK ---")
     const tokenset = await client.callback(opts.redirect_uri, reqParams, checks, this._extras);
 
     const passReq = this._passReqToCallback;
     const loadUserinfo = this._verify.length > (passReq ? 3 : 2) && client.issuer.userinfo_endpoint;
+    console.log("--- STRATEGY VIEW loaduserinfo: ",loadUserinfo)
 
     const args = [tokenset, verified.bind(this)];
 
@@ -167,7 +169,9 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
           tokenset,
         });
       }
+      console.log("--- STRATEGY START USERINFO ---")
       const userinfo = await client.userinfo(tokenset);
+      console.log("--- STRATEGY PRINT USERINFO: ", userinfo)
       args.splice(1, 0, userinfo);
     }
 

@@ -384,6 +384,7 @@ class BaseClient {
     { exchangeBody, clientAssertionPayload, DPoP } = {}
   ) {
     let params = pickCb(parameters);
+    console.log('START CALLBACK: 1/x')
 
     if (checks.jarm && !("response" in parameters)) {
       throw new RPError({
@@ -508,7 +509,7 @@ class BaseClient {
         },
         { clientAssertionPayload, DPoP }
       );
-
+      console.log('CALLBACK: 2/x decrypt & validate id token')
       await this.decryptIdToken(tokenset);
       await this.validateIdToken(
         tokenset,
@@ -665,7 +666,9 @@ class BaseClient {
   }
 
   async decryptIdToken(token) {
+    console.log('Decrypt id token:')
     if (!this.id_token_encrypted_response_alg) {
+      console.log('Decrypt_1 id token:', token)
       return token;
     }
 
@@ -685,9 +688,11 @@ class BaseClient {
 
     if (token instanceof TokenSet) {
       token.id_token = result;
+      console.log('Decrypt_2 id token:', token)
       return token;
     }
 
+    console.log('Decrypt_3 id token:', result)
     return result;
   }
 
@@ -777,6 +782,7 @@ class BaseClient {
   }
 
   async validateIdToken(tokenSet, nonce, returnedBy, maxAge, state) {
+    console.log('Validate id token:')
     let idToken = tokenSet;
 
     const expectedAlg = this.id_token_signed_response_alg;
@@ -932,7 +938,7 @@ class BaseClient {
         throw new RPError({ message: err.message, jwt: idToken });
       }
     }
-
+    console.log('Validate id token return:', tokenSet)
     return tokenSet;
   }
 
