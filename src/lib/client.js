@@ -799,18 +799,14 @@ class BaseClient {
 
     idToken = String(idToken);
 
-    try {
-      const timestamp = now();
-      const {
-        protected: header,
-        payload,
-        key,
-      } = await this.validateJWT(idToken, expectedAlg);
-      console.log('Exit validatJWT')  
-    } catch (error) {
-      console.log('Error on validateJWT: ')
-      console.log(error) 
-    }
+    
+    const timestamp = now();
+    const {
+      protected: header,
+      payload,
+      key,
+    } = await this.validateJWT(idToken, expectedAlg);
+    console.log('Exit validatJWT')  
     
 
     if (
