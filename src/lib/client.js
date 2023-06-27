@@ -805,8 +805,6 @@ class BaseClient {
         payload,
         key,
       } = await this.validateJWT(idToken, expectedAlg);
-      console.log('payload: ',payload)
-      console.log('key: ',key)
       console.log('Exit validatJWT')  
     } catch (error) {
       console.log('Error on validateJWT: ')
@@ -1168,6 +1166,8 @@ class BaseClient {
         .catch(() => {});
       console.log('In valiadateJWT, loop on keys: ', verified)
       if (verified) {
+        console.log('payload: ',payload)
+        console.log('key: ',key)
         return {
           payload,
           protected: verified.protectedHeader,
