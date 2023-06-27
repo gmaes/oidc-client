@@ -521,7 +521,7 @@ class BaseClient {
       if (params.session_state) {
         tokenset.session_state = params.session_state;
       }
-
+      console.log('Return of callback fonction with tokenset', tokenset)
       return tokenset;
     }
 
