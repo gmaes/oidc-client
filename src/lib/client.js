@@ -804,6 +804,7 @@ class BaseClient {
       payload,
       key,
     } = await this.validateJWT(idToken, expectedAlg);
+    console.log('Exit validatJWT')
 
     if (
       typeof maxAge === "number" ||
@@ -961,7 +962,7 @@ class BaseClient {
       });
     }
     console.log('In valiadateJWT, decoded token: ', payload)
-
+    console.log('Entering if1 header.alg', header.alg)
     if (header.alg !== expectedAlg) {
       throw new RPError({
         printf: [
@@ -972,13 +973,14 @@ class BaseClient {
         jwt,
       });
     }
-
+    console.log('Entering if2 isSelfIssued', isSelfIssued)
     if (isSelfIssued) {
       required = [...required, "sub_jwk"];
     }
 
     required.forEach(verifyPresence.bind(undefined, payload, jwt));
 
+    console.log('Entering if3 payload.iss', payload.iss)
     if (payload.iss !== undefined) {
       let expectedIss = this.issuer.issuer;
 
@@ -998,6 +1000,7 @@ class BaseClient {
       }
     }
 
+    console.log('Entering if4 payload.iat', payload.iat)
     if (payload.iat !== undefined) {
       if (typeof payload.iat !== "number") {
         throw new RPError({
@@ -1007,6 +1010,7 @@ class BaseClient {
       }
     }
 
+    console.log('Entering if5 payload.nbf', payload.nbf)
     if (payload.nbf !== undefined) {
       if (typeof payload.nbf !== "number") {
         throw new RPError({
@@ -1029,6 +1033,7 @@ class BaseClient {
       }
     }
 
+    console.log('Entering if6 payload.exp', payload.exp)
     if (payload.exp !== undefined) {
       if (typeof payload.exp !== "number") {
         throw new RPError({
@@ -1051,6 +1056,7 @@ class BaseClient {
       }
     }
 
+    console.log('Entering if7 payload.aud', payload.aud)
     if (payload.aud !== undefined) {
       if (Array.isArray(payload.aud)) {
         if (payload.aud.length > 1 && !payload.azp) {
@@ -1082,6 +1088,7 @@ class BaseClient {
       }
     }
 
+    console.log('Entering if8 payload.azp', payload.azp)
     if (payload.azp !== undefined) {
       let additionalAuthorizedParties = this.#additionalAuthorizedParties;
 
