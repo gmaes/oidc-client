@@ -161,6 +161,7 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
     console.log("--- STRATEGY VIEW loaduserinfo: ",loadUserinfo)
     
     const args = [tokenset, verified.bind(this)];
+    console.log('View tokenset: ', tokenset)
 
     if (loadUserinfo) {
       if (!tokenset.access_token) {
