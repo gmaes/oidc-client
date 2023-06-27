@@ -153,17 +153,13 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
       response_type: responseType,
     };
     console.log("--- STRATEGY START CALLBACK ---")
-    try {
-      const tokenset = await client.callback(opts.redirect_uri, reqParams, checks, this._extras);
-    } catch (error) {
-      console.log(' Catch on the callback function')
-      console.log(error)
-    }
+    const tokenset = await client.callback(opts.redirect_uri, reqParams, checks, this._extras);
+
 
     const passReq = this._passReqToCallback;
     const loadUserinfo = this._verify.length > (passReq ? 3 : 2) && client.issuer.userinfo_endpoint;
     console.log("--- STRATEGY VIEW loaduserinfo: ",loadUserinfo)
-
+    
     const args = [tokenset, verified.bind(this)];
 
     if (loadUserinfo) {
