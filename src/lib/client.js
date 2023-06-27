@@ -805,6 +805,8 @@ class BaseClient {
         payload,
         key,
       } = await this.validateJWT(idToken, expectedAlg);
+      console.log('payload: ',payload)
+      console.log('key: ',key)
       console.log('Exit validatJWT')  
     } catch (error) {
       console.log('Error on validateJWT: ')
