@@ -798,13 +798,19 @@ class BaseClient {
 
     idToken = String(idToken);
 
-    const timestamp = now();
-    const {
-      protected: header,
-      payload,
-      key,
-    } = await this.validateJWT(idToken, expectedAlg);
-    console.log('Exit validatJWT')
+    try {
+      const timestamp = now();
+      const {
+        protected: header,
+        payload,
+        key,
+      } = await this.validateJWT(idToken, expectedAlg);
+      console.log('Exit validatJWT')  
+    } catch (error) {
+      console.log('Error on validateJWT: ')
+      console.log(error) 
+    }
+    
 
     if (
       typeof maxAge === "number" ||
@@ -1034,14 +1040,17 @@ class BaseClient {
     }
 
     console.log('Entering if6 payload.exp', payload.exp)
-    if (payload.exp !== undefined) {
+    if (payload.exp !== undefined) { 
+      console.log('Entering if6-1 payload.exp', payload.exp)
       if (typeof payload.exp !== "number") {
+        console.log('Entering if6-1-1 payload.exp', payload.exp)
         throw new RPError({
           message: "JWT exp claim must be a JSON numeric value",
           jwt,
         });
       }
       if (timestamp - this[CLOCK_TOLERANCE] >= payload.exp) {
+        console.log('Entering if6-1-2 payload.exp', payload.exp)
         throw new RPError({
           printf: [
             "JWT expired, now %i, exp %i",
