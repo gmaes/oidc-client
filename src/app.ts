@@ -118,6 +118,7 @@ const openIdConnectStrategy = async (app: Express) => {
         failureRedirect: getFrontendEndpoint(),
         scope: openIdScope,
         successRedirect: `${getFrontendEndpoint()}/label/login/success`,
+        failureMessage: true
       })(req, res, next);
     });
 

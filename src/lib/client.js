@@ -1108,9 +1108,10 @@ class BaseClient {
     }
 
     let keys;
-
+    console.log('Entering if isSelfIssued:', isSelfIssued)
     if (isSelfIssued) {
       try {
+        console.log('Entering if isSelfIssued in try')
         assert(isPlainObject(payload.sub_jwk));
         const key = await jose.importJWK(payload.sub_jwk, header.alg);
         assert.equal(key.type, "public");
