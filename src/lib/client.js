@@ -509,6 +509,7 @@ class BaseClient {
         },
         { clientAssertionPayload, DPoP }
       );
+      console.log('tokenset after grant call', tokenset)
       console.log('CALLBACK: 2/x decrypt & validate id token')
       await this.decryptIdToken(tokenset);
       await this.validateIdToken(
@@ -816,13 +817,16 @@ class BaseClient {
       typeof maxAge === "number" ||
       (maxAge !== skipMaxAgeCheck && this.require_auth_time)
     ) {
+      console.log('validateIdToken: inside if 1')
       if (!payload.auth_time) {
+        console.log('validateIdToken: inside if 1-1')
         throw new RPError({
           message: "missing required JWT property auth_time",
           jwt: idToken,
         });
       }
       if (typeof payload.auth_time !== "number") {
+        console.log('validateIdToken: inside if 1-2')
         throw new RPError({
           message: "JWT auth_time claim must be a JSON numeric value",
           jwt: idToken,
@@ -834,6 +838,7 @@ class BaseClient {
       typeof maxAge === "number" &&
       payload.auth_time + maxAge < timestamp - this[CLOCK_TOLERANCE]
     ) {
+      console.log('validateIdToken: inside if 2')
       throw new RPError({
         printf: [
           "too much time has elapsed since the last End-User authentication, max_age %i, auth_time: %i, now %i",
@@ -853,6 +858,7 @@ class BaseClient {
       (payload.nonce || nonce !== undefined) &&
       payload.nonce !== nonce
     ) {
+      console.log('validateIdToken: inside if 3')
       throw new RPError({
         printf: ["nonce mismatch, expected %s, got: %s", nonce, payload.nonce],
         jwt: idToken,
@@ -860,7 +866,9 @@ class BaseClient {
     }
 
     if (returnedBy === "authorization") {
+      console.log('validateIdToken: inside if 4')
       if (!payload.at_hash && tokenSet.access_token) {
+        console.log('validateIdToken: inside if 4-1')
         throw new RPError({
           message: "missing required property at_hash",
           jwt: idToken,
@@ -868,6 +876,7 @@ class BaseClient {
       }
 
       if (!payload.c_hash && tokenSet.code) {
+        console.log('validateIdToken: inside if 4-2')
         throw new RPError({
           message: "missing required property c_hash",
           jwt: idToken,
@@ -875,6 +884,7 @@ class BaseClient {
       }
 
       if (this.fapi()) {
+        console.log('validateIdToken: inside if 4-3')
         if (!payload.s_hash && (tokenSet.state || state)) {
           throw new RPError({
             message: "missing required property s_hash",
@@ -884,6 +894,7 @@ class BaseClient {
       }
 
       if (payload.s_hash) {
+        console.log('validateIdToken: inside if 4-4')
         if (!state) {
           throw new TypeError(
             'cannot verify s_hash, "checks.state" property not provided'
@@ -905,6 +916,7 @@ class BaseClient {
     }
 
     if (this.fapi() && payload.iat < timestamp - 3600) {
+      console.log('validateIdToken: inside if 5')
       throw new RPError({
         printf: [
           "JWT issued too far in the past, now %i, iat %i",
@@ -919,6 +931,7 @@ class BaseClient {
     }
 
     if (tokenSet.access_token && payload.at_hash !== undefined) {
+      console.log('validateIdToken: inside if 6')
       try {
         tokenHash.validate(
           { claim: "at_hash", source: "access_token" },
@@ -933,6 +946,7 @@ class BaseClient {
     }
 
     if (tokenSet.code && payload.c_hash !== undefined) {
+      console.log('validateIdToken: inside if 7')
       try {
         tokenHash.validate(
           { claim: "c_hash", source: "code" },
