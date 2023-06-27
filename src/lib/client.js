@@ -960,7 +960,7 @@ class BaseClient {
         jwt,
       });
     }
-    console.log('In valiadateJWT, decoded tokent: ', payload)
+    console.log('In valiadateJWT, decoded token: ', payload)
 
     if (header.alg !== expectedAlg) {
       throw new RPError({
@@ -1121,6 +1121,7 @@ class BaseClient {
           jwt,
         });
       }
+      console.log('valiadateJWT entering calculateJwkThumbprint: ', payload.sub_jwk)
       if (
         (await jose.calculateJwkThumbprint(payload.sub_jwk)) !== payload.sub
       ) {
@@ -1130,15 +1131,18 @@ class BaseClient {
         });
       }
     } else if (header.alg.startsWith("HS")) {
+      console.log('valiadateJWT entering secretForAlg')
       keys = [this.secretForAlg(header.alg)];
     } else if (header.alg !== "none") {
+      console.log('valiadateJWT entering queryKeyStore call')
       keys = await queryKeyStore.call(this.issuer, { ...header, use: "sig" });
     }
 
     if (!keys && header.alg === "none") {
+      console.log('valiadateJWT early return header.alg: ', header.alg)
       return { protected: header, payload };
     }
-    console.log('Start valiadateJWT, loop on keys: ', keys)
+    console.log('Start valiadateJWT loop on keys: ', keys)
     for (const key of keys) {
       const verified = await jose
         .compactVerify(jwt, key instanceof Uint8Array ? key : key.keyObject)
