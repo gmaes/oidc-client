@@ -93,6 +93,7 @@ const openIdConnectStrategy = async (app: Express) => {
         { client },
         // @ts-ignore
         async (tokenSet: TokenSet, userInfo: any, done: any) => {
+          console.log("Claims: " + tokenSet.claims())
           console.log("VERIFY", JSON.stringify({ tokenSet, userInfo }));
           if (!rejectNewUsers) {
             console.log(userInfo);
